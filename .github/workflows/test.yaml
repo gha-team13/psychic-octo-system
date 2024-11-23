@@ -3,26 +3,36 @@ on:
   workflow_call:
 
 jobs:
-  test-and-build:
+  # Block 1: Checkout Repository
+  checkout:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js environment
+  # Block 2: Setup Node.js Environment
+  setup-node:
+    runs-on: ubuntu-latest
+    steps:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "npm"
 
-      # Step 3: Install Dependencies
+  # Block 3: Install Dependencies
+  install-dependencies:
+    runs-on: ubuntu-latest
+    needs: [checkout, setup-node]
+    steps:
       - name: Install Dependencies
         run: npm ci
 
-      # Step 4: Code Quality Checks
+  # Block 4: Code Quality Checks
+  code-quality-checks:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
       - name: Check for Formatting Errors
         run: npm run format
 
@@ -32,30 +42,44 @@ jobs:
       - name: Check for Type Errors
         run: npm run typecheck
 
-      # Step 5: Prepare Environment for Build
+  # Block 5: Prepare Environment for Build
+  prepare-build-env:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
       - name: Create .env File
         run: echo "FLAGSMITH_KEY=${{ secrets.FLAGSMITH_KEY }}" > .env
 
-      # Step 6: Build Next.js Application
-      - name: Build Next.js application
+  # Block 6: Build Next.js Application
+  build:
+    runs-on: ubuntu-latest
+    needs: prepare-build-env
+    steps:
+      - name: Build Next.js Application
         run: npm run build
 
-      # Step 7: Verify Build Output
       - name: Verify Build Output
         run: ls -la .next/
 
-      # Step 8: Upload Build Artifacts (optional)
+  # Block 7: Upload Build Artifacts
+  upload-build-artifacts:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
           path: .next/
 
-      # Step 9: Run Unit Tests
+  # Block 8: Unit Tests
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
       - name: Run Unit Tests
         run: npm run test
 
-      # Step 10: Upload Coverage Reports
       - name: Upload Coverage Reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -63,23 +87,24 @@ jobs:
           name: coverage
           path: coverage/
 
-      # Step 11: Report to Codecov
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Step 12: End-to-End (E2E) Testing Setup
+  # Block 9: End-to-End (E2E) Testing
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # Step 13: Run E2E Tests
       - name: Run E2E Tests
         run: npm run test:e2e
         env:
           FLAGSMITH_KEY: ${{ secrets.FLAGSMITH_KEY }}
 
-      # Step 14: Upload Playwright Reports
       - name: Upload Playwright Reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -87,7 +112,11 @@ jobs:
           name: playwright-report
           path: playwright-report/
 
-      # Step 15: Notify on Slack (Failure Only)
+  # Block 10: Slack Notifications on Failure
+  slack-notifications:
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    steps:
       - name: Notify Slack on Failure
         uses: slackapi/slack-github-action@v2.0.0
         if: failure()
