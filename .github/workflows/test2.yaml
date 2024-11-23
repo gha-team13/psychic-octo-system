@@ -5,90 +5,72 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      # Step 2: Setup Node.js environment
-      - name: Setup Node.js
+      - name: Setup Node Environment
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "npm"
-
-      # Step 3: Install Dependencies
       - name: Install Dependencies
         run: npm ci
-
-      # Step 4: Code Quality Checks
       - name: Check for Formatting Errors
         run: npm run format
-
       - name: Check for ESLint Errors
         run: npm run lint
-
       - name: Check for Type Errors
         run: npm run typecheck
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      # Step 5: Prepare Environment for Build
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
       - name: Create .env File
         run: echo "FLAGSMITH_KEY=${{ secrets.FLAGSMITH_KEY }}" > .env
 
-      # Step 6: Build Next.js Application
+      # Step 4: Build Next.js application
       - name: Build Next.js application
         run: npm run build
 
-      # Step 7: Verify Build Output
-      - name: Verify Build Output
+      # Step 5: Verify the `.next/` directory
+      - name: Verify build output
         run: ls -la .next/
 
-      # Step 8: Upload Build Artifacts (optional)
-      - name: Upload Build Artifacts
+      # Step 6: Upload build artifacts (optional)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
           path: .next/
-
-      # Step 9: Run Unit Tests
       - name: Run Unit Tests
         run: npm run test
-
-      # Step 10: Upload Coverage Reports
-      - name: Upload Coverage Reports
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage
           path: coverage/
-
-      # Step 11: Report to Codecov
-      - name: Upload to Codecov
+      - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      # Step 12: End-to-End (E2E) Testing Setup
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-
-      # Step 13: Run E2E Tests
       - name: Run E2E Tests
         run: npm run test:e2e
         env:
           FLAGSMITH_KEY: ${{ secrets.FLAGSMITH_KEY }}
-
-      # Step 14: Upload Playwright Reports
-      - name: Upload Playwright Reports
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
           path: playwright-report/
-
-      # Step 15: Notify on Slack (Failure Only)
-      - name: Notify Slack on Failure
+      - name: Send a Slack Message on Failure 4
         uses: slackapi/slack-github-action@v2.0.0
         if: failure()
         with:
