@@ -17,18 +17,10 @@ jobs:
           node-version: 18
           cache: "npm"
 
-  install-dependencies:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 2: Dependency Installation
       - name: Install Dependencies
         run: npm ci
 
-  code-quality-checks:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 3: Code Quality Checks
       - name: Check for Formatting Errors
         run: npm run format
@@ -39,10 +31,6 @@ jobs:
       - name: Check for Type Errors
         run: npm run typecheck
 
-  build-setup:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 4: Build Setup
       - name: Create .env File
         run: echo "FLAGSMITH_KEY=${{ secrets.FLAGSMITH_KEY }}" > .env
@@ -59,10 +47,6 @@ jobs:
           name: nextjs-build
           path: .next/
 
-  unit-testing-and-coverage:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 5: Unit Testing and Coverage
       - name: Run Unit Tests
         run: npm run test
@@ -79,10 +63,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  e2e-testing:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 6: End-to-End (E2E) Testing
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -99,10 +79,6 @@ jobs:
           name: playwright-report
           path: playwright-report/
 
-  notifications:
-    runs-on: ubuntu-latest
-
-    steps:
       # Block 7: Notifications
       - name: Notify Slack on Failure
         uses: slackapi/slack-github-action@v2.0.0
