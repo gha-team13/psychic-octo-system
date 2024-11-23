@@ -31,6 +31,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Debug environment variables
+        run: echo "EnvironmentKey: $environmentKey"
+        env:
+          environmentKey: ${{ secrets.ENVIRONMENT_KEY }}
+
+
       # Step 4: Build Next.js application
       - name: Build Next.js application
         env:
