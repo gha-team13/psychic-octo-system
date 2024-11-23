@@ -7,21 +7,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Block 1: Repository Setup
+      # Step 1: Checkout the code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Step 2: Setup Node.js environment
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: "npm"
 
-      # Block 2: Dependency Installation
+      # Step 3: Install Dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # Block 3: Code Quality Checks
+      # Step 4: Code Quality Checks
       - name: Check for Formatting Errors
         run: npm run format
 
@@ -31,26 +32,30 @@ jobs:
       - name: Check for Type Errors
         run: npm run typecheck
 
-      # Block 4: Build Setup
+      # Step 5: Prepare Environment for Build
       - name: Create .env File
         run: echo "FLAGSMITH_KEY=${{ secrets.FLAGSMITH_KEY }}" > .env
 
+      # Step 6: Build Next.js Application
       - name: Build Next.js application
         run: npm run build
 
+      # Step 7: Verify Build Output
       - name: Verify Build Output
         run: ls -la .next/
 
+      # Step 8: Upload Build Artifacts (optional)
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
           path: .next/
 
-      # Block 5: Unit Testing and Coverage
+      # Step 9: Run Unit Tests
       - name: Run Unit Tests
         run: npm run test
 
+      # Step 10: Upload Coverage Reports
       - name: Upload Coverage Reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -58,20 +63,23 @@ jobs:
           name: coverage
           path: coverage/
 
+      # Step 11: Report to Codecov
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Block 6: End-to-End (E2E) Testing
+      # Step 12: End-to-End (E2E) Testing Setup
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      # Step 13: Run E2E Tests
       - name: Run E2E Tests
         run: npm run test:e2e
         env:
           FLAGSMITH_KEY: ${{ secrets.FLAGSMITH_KEY }}
 
+      # Step 14: Upload Playwright Reports
       - name: Upload Playwright Reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -79,7 +87,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
 
-      # Block 7: Notifications
+      # Step 15: Notify on Slack (Failure Only)
       - name: Notify Slack on Failure
         uses: slackapi/slack-github-action@v2.0.0
         if: failure()
