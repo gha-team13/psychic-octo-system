@@ -25,6 +25,7 @@ jobs:
       # Block 2: Dependency Installation
       - name: Install Dependencies
         run: npm install
+        working-directory: ./nextjs-starter
 
   code-quality-checks:
     runs-on: ubuntu-latest
