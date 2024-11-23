@@ -1,4 +1,4 @@
-require('dotenv').config(); // Load environment variables from .env
+require("dotenv").config(); // Load environment variables from .env
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -12,4 +12,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
