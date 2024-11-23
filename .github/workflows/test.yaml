@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create .env File
+        run: echo "FLAGSMITH_KEY=${{ secrets.FLAGSMITH_KEY }}" > .env
+
       # Step 4: Build Next.js application
       - name: Build Next.js application
         run: npm run build
