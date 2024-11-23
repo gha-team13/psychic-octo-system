@@ -65,7 +65,7 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_WEBHOOK_TYPE: incoming-webhook
       - name: Send custom JSON data to Slack workflow
         uses: slackapi/slack-github-action@v2.0.0
         if: failure()
