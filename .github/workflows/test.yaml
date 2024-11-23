@@ -13,6 +13,7 @@ jobs:
   # Block 2: Setup Node.js Environment
   setup-node:
     runs-on: ubuntu-latest
+    needs: checkout
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -23,10 +24,16 @@ jobs:
   # Block 3: Install Dependencies
   install-dependencies:
     runs-on: ubuntu-latest
-    needs: [checkout, setup-node]
+    needs: setup-node
     steps:
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "No lock file found. Running npm install."
+            npm install
+          fi
 
   # Block 4: Code Quality Checks
   code-quality-checks:
