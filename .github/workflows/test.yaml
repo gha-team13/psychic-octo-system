@@ -49,12 +49,14 @@ jobs:
           path: playwright-report/
       - name: Send a Slack Message on Failure
         uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
         with:
           payload-file-path: "./.github/slack/test-failure-slack-payload.json"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       - name: Send custom JSON data to Slack workflow
         uses: slackapi/slack-github-action@v2.0.0
+        if failure()
         with:
           payload-file-path: "./.github/slack/test-failure-slack-payload.json"
           payload-templated: true
