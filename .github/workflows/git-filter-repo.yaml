@@ -1,0 +1,44 @@
+name: Git Filter Repo Workflow
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+      - feature/* # Trigger on any branches starting with "feature/"
+
+jobs:
+  filter-repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install Python (required for git-filter-repo)
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      # Step 3: Install git-filter-repo
+      - name: Install git-filter-repo
+        run: |
+          pip install git-filter-repo
+
+      # Step 4: Run git-filter-repo to modify commit history
+      - name: Run git-filter-repo
+        run: |
+          git filter-repo --commit-callback '
+          if commit.author_name == "alialaa":
+              commit.author_name = "Anthony DCosta"
+              commit.author_email = "anthony.dcosta@td.com"
+          '
+
+      # Step 5: Force push changes to the repository
+      - name: Push Changes
+        run: |
+          git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          git push origin --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
