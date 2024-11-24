@@ -3,7 +3,7 @@ name: Git Filter Repo Workflow
 on:
   push:
     branches:
-      - main      # Trigger on pushes to the main branch
+      - main # Trigger on pushes to the main branch
       - feature/* # Trigger on any branches starting with "feature/"
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       # Step 3: Install git-filter-repo
       - name: Install git-filter-repo
@@ -38,7 +38,7 @@ jobs:
       # Step 5: Force push changes to the repository
       - name: Push Changes
         run: |
-          git remote set-url origin https://<GITHUB_TOKEN>@github.com/${{ github.repository }}.git
+          git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           git push origin --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
